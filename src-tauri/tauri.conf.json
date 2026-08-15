@@ -40,7 +40,7 @@
   "plugins": {},
   "bundle": {
     "active": true,
-    "targets": ["app", "dmg"],
+    "targets": ["app", "dmg", "nsis"],
     "resources": ["resources/nvm.sh"],
     "category": "DeveloperTool",
     "shortDescription": "Atlas — agent-first ideation and planning tool",
@@ -59,6 +59,16 @@
       "exceptionDomain": null,
       "signingIdentity": null,
       "providerShortName": null
+    },
+    "windows": {
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper",
+        "silent": true
+      },
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": ["English"]
+      }
     }
   }
 }

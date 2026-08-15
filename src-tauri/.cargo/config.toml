@@ -1,0 +1,11 @@
+# `esaxx-rs` (a C++ dep of `tokenizers`, used for local embeddings)
+# hardcodes the static MSVC CRT (/MT) in its build.rs, while the rest of
+# the C++ code in this binary (cxx-bridge for usearch/grafeo/
+# webview2-com-sys) links the default dynamic CRT (/MD) — MSVC's linker
+# refuses to mix the two in one binary (LNK2038: "mismatch detected for
+# 'RuntimeLibrary'" / LNK1319). Forcing crt-static here makes rustc's own
+# CRT usage — and the `cc` crate's C++ builds alongside it — consistently
+# static, matching esaxx-rs. Side effect (desirable for a standalone
+# installer): the binary no longer depends on vcruntime140.dll at runtime.
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]

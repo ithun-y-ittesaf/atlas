@@ -64,9 +64,11 @@ jobs:
     # Without this job every other check can be green while the app does not
     # build at all; `crates` only covers the libraries underneath it.
     #
-    # Runs on macOS because that is the supported platform (see CONTRIBUTING),
-    # and because Tauri on Linux would additionally need webkit2gtk/gtk3
-    # system packages installed before it could compile.
+    # Runs on macOS because that is the primary supported platform (see
+    # CONTRIBUTING) and where release builds are signed/notarized. `app-windows`
+    # below covers the same compile+test surface on Windows; Linux still isn't
+    # covered here because Tauri would additionally need webkit2gtk/gtk3 system
+    # packages installed before it could compile.
     #
     # This is the slowest job in the pipeline by a wide margin on a cold cache.
     name: app (src-tauri)
@@ -82,6 +84,31 @@ jobs:
           git config --global user.name "CI"
           git config --global user.email "ci@example.invalid"
       # Compiles the app and its command surface, then runs its 194 tests.
+      - name: Test
+        working-directory: src-tauri
+        run: cargo test
+
+  app-windows:
+    # Same compile+test coverage as `app`, but on Windows — catches regressions
+    # like a stray unix-only `use` (see commands/updater.rs's macOS/non-macOS
+    # split) that only show up when actually building for this target. Not a
+    # release/signing pipeline: Windows releases are built+signed locally via
+    # `scripts/release-windows.ps1`, matching how `release-macos.sh` isn't run
+    # in CI either.
+    name: app (src-tauri, windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - name: Configure git identity for test repos
+        run: |
+          git config --global user.name "CI"
+          git config --global user.email "ci@example.invalid"
       - name: Test
         working-directory: src-tauri
         run: cargo test
